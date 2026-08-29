@@ -29,6 +29,19 @@ from friday_assistant.models import (
     search_all,
     get_stats,
     export_data,
+    add_habit,
+    complete_habit,
+    get_habits,
+    add_shopping_item,
+    toggle_shopping_item,
+    get_shopping_items,
+    add_recipe,
+    add_recipe_ingredient,
+    get_recipes,
+    get_recipe_ingredients,
+    start_pomodoro,
+    end_pomodoro,
+    get_pomodoro_sessions,
 )
 from friday_assistant.comm import send_sms, send_whatsapp, make_call, ir_send
 from friday_assistant.utils import (
@@ -155,6 +168,27 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("backup", help="Backup database")
     restore_parser = subparsers.add_parser("restore", help="Restore database")
     restore_parser.add_argument("--file", metavar="PATH", default="friday_backup.db", help="Backup file path")
+
+    habit_parser = subparsers.add_parser("habit", help="Manage habits")
+    habit_parser.add_argument("--add", metavar="NAME", help="Add a habit")
+    habit_parser.add_argument("--complete", metavar="ID", type=int, help="Mark habit complete")
+    habit_parser.add_argument("--list", action="store_true", help="List habits")
+
+    shopping_parser = subparsers.add_parser("shopping", help="Shopping list")
+    shopping_parser.add_argument("--add", metavar="ITEM", help="Add shopping item")
+    shopping_parser.add_argument("--toggle", metavar="ID", type=int, help="Toggle item bought")
+    shopping_parser.add_argument("--list", action="store_true", help="List shopping items")
+
+    recipe_parser = subparsers.add_parser("recipe", help="Recipe manager")
+    recipe_parser.add_argument("--add", metavar="NAME", help="Add a recipe")
+    recipe_parser.add_argument("--ingredient", metavar="NAME", help="Ingredient name")
+    recipe_parser.add_argument("--amount", metavar="AMOUNT", help="Ingredient amount")
+    recipe_parser.add_argument("--list", action="store_true", help="List recipes")
+
+    pomodoro_parser = subparsers.add_parser("pomodoro", help="Pomodoro timer")
+    pomodoro_parser.add_argument("--start", metavar="TASK", nargs="?", help="Start pomodoro session")
+    pomodoro_parser.add_argument("--stop", metavar="ID", type=int, help="Stop pomodoro session")
+    pomodoro_parser.add_argument("--list", action="store_true", help="List pomodoro sessions")
 
     return parser.parse_args()
 
@@ -378,6 +412,72 @@ def main(argv: Optional[list] = None) -> int:
 
         elif args.command == "restore":
             print(restore_db(args.file))
+
+        elif args.command == "habit":
+            if args.add:
+                habit_id = add_habit(conn, user_id, args.add)
+                print(f"Habit added: {args.add} [{habit_id}]")
+            elif args.complete:
+                complete_habit(conn, args.complete)
+                print(f"Habit {args.complete} completed")
+            elif args.list:
+                habits = get_habits(conn, user_id)
+                for h in habits:
+                    print(f"[{h[0]}] {h[1]} ({h[2]}) streak={h[3]} best={h[4]}")
+            else:
+                print("Usage: friday habit --add NAME | --complete ID | --list")
+                return 1
+
+        elif args.command == "shopping":
+            if args.add:
+                item_id = add_shopping_item(conn, user_id, args.add)
+                print(f"Shopping item added: {args.add} [{item_id}]")
+            elif args.toggle:
+                toggle_shopping_item(conn, args.toggle)
+                print(f"Shopping item {args.toggle} toggled")
+            elif args.list:
+                items = get_shopping_items(conn, user_id)
+                for s in items:
+                    status = "bought" if s[3] else "pending"
+                    print(f"[{s[0]}] {s[1]} x{s[2]} ({status})")
+            else:
+                print("Usage: friday shopping --add ITEM | --toggle ID | --list")
+                return 1
+
+        elif args.command == "recipe":
+            if args.add:
+                recipe_id = add_recipe(conn, user_id, args.add)
+                print(f"Recipe added: {args.add} [{recipe_id}]")
+            elif args.ingredient:
+                recipe_id = int(args.ingredient) if args.ingredient.isdigit() else None
+                if recipe_id and args.amount:
+                    add_recipe_ingredient(conn, recipe_id, args.ingredient, args.amount)
+                    print(f"Ingredient added to recipe {recipe_id}")
+                else:
+                    print("Usage: friday recipe --ingredient NAME --amount AMOUNT --list")
+                    return 1
+            elif args.list:
+                recipes = get_recipes(conn, user_id)
+                for r in recipes:
+                    print(f"[{r[0]}] {r[1]} (servings: {r[3]})")
+            else:
+                print("Usage: friday recipe --add NAME | --ingredient NAME --amount AMOUNT | --list")
+                return 1
+
+        elif args.command == "pomodoro":
+            if args.start:
+                session_id = start_pomodoro(conn, user_id, args.start)
+                print(f"Pomodoro started: {args.start} [{session_id}]")
+            elif args.stop:
+                end_pomodoro(conn, args.stop)
+                print(f"Pomodoro {args.stop} stopped")
+            elif args.list:
+                sessions = get_pomodoro_sessions(conn, user_id)
+                for p in sessions:
+                    print(f"[{p[0]}] {p[1] or 'focus'} {p[2]} -> {p[3] or 'running'}")
+            else:
+                print("Usage: friday pomodoro --start [TASK] | --stop ID | --list")
+                return 1
 
         else:
             if hasattr(args, 'command') and args.command is None:

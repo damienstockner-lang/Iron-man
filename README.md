@@ -1,6 +1,6 @@
 # Friday Assistant
 
-A personal assistant CLI with schedule tracking, communication, vision, and Iron Man helmet mode.
+A personal assistant CLI with schedule tracking, communication, vision, Iron Man helmet mode, habits, shopping, recipes, and pomodoro timer.
 
 ## Installation
 
@@ -52,12 +52,26 @@ friday --help
 | `restore [--file PATH]` | Restore database from backup |
 | `tv --device NAME --command CMD [--listen]` | Send IR command or listen for voice command |
 | `voice --command TEXT` | Speak text aloud |
+| `habit --add NAME` | Add a habit |
+| `habit --complete ID` | Mark habit complete |
+| `habit --list` | List habits with streaks |
+| `shopping --add ITEM` | Add shopping item |
+| `shopping --toggle ID` | Toggle item bought |
+| `shopping --list` | List shopping items |
+| `recipe --add NAME` | Add recipe |
+| `recipe --list` | List recipes |
+| `pomodoro --start [TASK]` | Start pomodoro session |
+| `pomodoro --stop ID` | Stop pomodoro session |
+| `pomodoro --list` | List pomodoro sessions |
 
 ## Notes
 
 - `communicate`, `tv`, and Termux-dependent features print fallback messages if the required commands are unavailable.
 - `speak`, `translate`, `vision`, and `ask` degrade gracefully if optional libraries are missing.
 - The default user phone number is configured in the package.
-- `weather` requires the `OPENWEATHER_API_KEY` environment variable to be set.
+- `weather` requires the `OPENWEATHER_API_KEY` env var.
 - `config` stores values in `friday.ini` by default.
 - `backup` copies `friday.db` to `friday_backup.db`. `restore` replaces `friday.db` with the backup.
+- `habit`, `shopping`, `recipe`, and `pomodoro` commands store data in SQLite with foreign keys.
+- `pomodoro` tracks focus sessions with start/stop timestamps.
+- `tv --listen` uses SpeechRecognition + Google Speech-to-Text to match voice commands.

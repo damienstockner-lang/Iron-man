@@ -1,0 +1,20 @@
+workflows:
+  ios-workflow:
+    name: Friday iOS
+    instance_type: mac_mini_m2
+    environment:
+      vars:
+        XCODE_WORKSPACE: ios/App/App.xcworkspace
+        XCODE_SCHEME: App
+      node: latest
+    scripts:
+      - npm install
+      - npx cap sync ios
+      - xcode-project get-version --path ios/App
+      - xcode-project build-ipa --path ios/App --scheme App --configuration Release
+    artifacts:
+      - build/ios/ipa/*.ipa
+    publishing:
+      email:
+        recipients:
+          - user@example.com

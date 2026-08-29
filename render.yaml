@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: friday-assistant
+    runtime: static
+    buildCommand: echo "No build step required"
+    publishPath: web_dashboard/static
+    headers:
+      - path: "/*"
+        name: Cache-Control
+        value: "no-cache"
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

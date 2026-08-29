@@ -1,0 +1,16 @@
+{
+  "name": "Friday Assistant",
+  "short_name": "Friday",
+  "description": "Your personal assistant",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#1e3c72",
+  "theme_color": "#1e3c72",
+  "icons": [
+    {
+      "src": "https://emoji.gg/assets/emoji/robot.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

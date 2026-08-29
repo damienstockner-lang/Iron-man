@@ -17,10 +17,11 @@ def add_schedule_event(conn: sqlite3.Connection, user_id: int, title: str,
 
 
 def add_task(conn: sqlite3.Connection, user_id: int, title: str,
-             description: Optional[str] = None, due_date: Optional[str] = None) -> int:
+             description: Optional[str] = None, due_date: Optional[str] = None,
+             priority: str = "medium") -> int:
     cursor = conn.execute(
-        "INSERT INTO tasks (user_id, title, description, due_date) VALUES (?, ?, ?, ?)",
-        (user_id, title, description, due_date),
+        "INSERT INTO tasks (user_id, title, description, due_date, priority) VALUES (?, ?, ?, ?, ?)",
+        (user_id, title, description, due_date, priority),
     )
     conn.commit()
     return int(cursor.lastrowid)
@@ -31,9 +32,9 @@ def complete_task(conn: sqlite3.Connection, task_id: int) -> None:
     conn.commit()
 
 
-def add_note(conn: sqlite3.Connection, user_id: int, content: str) -> int:
+def add_note(conn: sqlite3.Connection, user_id: int, content: str, tags: Optional[str] = None) -> int:
     cursor = conn.execute(
-        "INSERT INTO notes (user_id, content) VALUES (?, ?)", (user_id, content)
+        "INSERT INTO notes (user_id, content, tags) VALUES (?, ?, ?)", (user_id, content, tags)
     )
     conn.commit()
     return int(cursor.lastrowid)
@@ -116,10 +117,10 @@ def record_steps(conn: sqlite3.Connection, steps: int, step_date: Optional[str] 
 
 
 def get_tasks(conn: sqlite3.Connection, user_id: int, include_completed: bool = False) -> list:
-    query = "SELECT task_id, title, description, is_completed, due_date FROM tasks WHERE user_id = ?"
+    query = "SELECT task_id, title, description, is_completed, due_date, priority FROM tasks WHERE user_id = ?"
     if not include_completed:
         query += " AND is_completed = 0"
-    query += " ORDER BY due_date IS NULL, due_date"
+    query += " ORDER BY CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END, due_date IS NULL, due_date"
     return conn.execute(query, (user_id,)).fetchall()
 
 
@@ -148,7 +149,7 @@ def get_today_events(conn: sqlite3.Connection, user_id: int) -> list:
 
 def get_notes(conn: sqlite3.Connection, user_id: int, limit: int = 20) -> list:
     return conn.execute(
-        "SELECT note_id, content, created_at FROM notes WHERE user_id = ? ORDER BY created_at DESC LIMIT ?",
+        "SELECT note_id, content, created_at, tags FROM notes WHERE user_id = ? ORDER BY created_at DESC LIMIT ?",
         (user_id, limit),
     ).fetchall()
 
@@ -212,11 +213,11 @@ def get_stats(conn: sqlite3.Connection, user_id: int) -> dict:
 
 def export_data(conn: sqlite3.Connection, user_id: int) -> dict:
     tasks = conn.execute(
-        "SELECT task_id, title, description, is_completed, due_date FROM tasks WHERE user_id = ?",
+        "SELECT task_id, title, description, is_completed, due_date, priority FROM tasks WHERE user_id = ?",
         (user_id,),
     ).fetchall()
     notes = conn.execute(
-        "SELECT note_id, content, created_at FROM notes WHERE user_id = ?", (user_id,)
+        "SELECT note_id, content, created_at, tags FROM notes WHERE user_id = ?", (user_id,)
     ).fetchall()
     events = conn.execute(
         "SELECT event_id, title, starts_at, ends_at, location, details FROM schedule_events WHERE user_id = ?",
@@ -230,8 +231,8 @@ def export_data(conn: sqlite3.Connection, user_id: int) -> dict:
         (user_id,),
     ).fetchall()
     return {
-        "tasks": [{"task_id": t[0], "title": t[1], "description": t[2], "is_completed": t[3], "due_date": t[4]} for t in tasks],
-        "notes": [{"note_id": n[0], "content": n[1], "created_at": n[2]} for n in notes],
+        "tasks": [{"task_id": t[0], "title": t[1], "description": t[2], "is_completed": t[3], "due_date": t[4], "priority": t[5]} for t in tasks],
+        "notes": [{"note_id": n[0], "content": n[1], "created_at": n[2], "tags": n[3]} for n in notes],
         "events": [{"event_id": e[0], "title": e[1], "starts_at": e[2], "ends_at": e[3], "location": e[4], "details": e[5]} for e in events],
         "contacts": [{"contact_id": c[0], "name": c[1], "phone": c[2], "email": c[3]} for c in contacts],
         "expenses": [{"expense_id": x[0], "amount": x[1], "category": x[2], "note": x[3], "spent_at": x[4]} for x in expenses],

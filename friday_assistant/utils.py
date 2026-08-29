@@ -1,4 +1,8 @@
+import configparser
+import json
+import os
 import random
+import shutil
 import time
 from typing import Optional
 
@@ -48,6 +52,53 @@ def answer_question(question: str) -> str:
             return f"Searching web for: {question}"
         except Exception:
             return f"[Q&A] {question}"
+
+
+def get_weather(city: str = "Vancouver") -> str:
+    try:
+        import requests
+        api_key = os.environ.get("OPENWEATHER_API_KEY")
+        if not api_key:
+            return "[Weather] Set OPENWEATHER_API_KEY env var to use this feature."
+        url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric"
+        data = requests.get(url, timeout=10).json()
+        temp = data["main"]["temp"]
+        desc = data["weather"][0]["description"]
+        return f"{city}: {temp}°C, {desc}"
+    except Exception as e:
+        return f"[Weather] {e}"
+
+
+def load_config(path: str = "friday.ini") -> dict:
+    config = configparser.ConfigParser()
+    if os.path.exists(path):
+        config.read(path)
+        return {s: dict(config.items(s)) for s in config.sections()}
+    return {}
+
+
+def save_config(config: dict, path: str = "friday.ini") -> None:
+    parser = configparser.ConfigParser()
+    for section, items in config.items():
+        parser[section] = items
+    with open(path, "w") as f:
+        parser.write(f)
+
+
+def backup_db(backup_path: str = "friday_backup.db") -> str:
+    src = "friday.db"
+    if not os.path.exists(src):
+        return "[Backup] No database found."
+    shutil.copy2(src, backup_path)
+    return f"[Backup] Saved to {backup_path}"
+
+
+def restore_db(backup_path: str = "friday_backup.db") -> str:
+    dst = "friday.db"
+    if not os.path.exists(backup_path):
+        return "[Restore] Backup file not found."
+    shutil.copy2(backup_path, dst)
+    return f"[Restore] Restored from {backup_path}"
 
 
 def helmet_mode() -> None:

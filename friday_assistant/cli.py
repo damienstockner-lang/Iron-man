@@ -39,6 +39,11 @@ from friday_assistant.utils import (
     answer_question,
     helmet_mode,
     design_ascii,
+    get_weather,
+    load_config,
+    save_config,
+    backup_db,
+    restore_db,
 )
 
 
@@ -53,10 +58,12 @@ def build_parser() -> argparse.ArgumentParser:
     task_parser.add_argument("--add", metavar="TITLE", help="Add a new task")
     task_parser.add_argument("--done", metavar="ID", type=int, help="Mark task as complete")
     task_parser.add_argument("--list", action="store_true", help="List pending tasks")
+    task_parser.add_argument("--priority", metavar="PRI", default="medium", choices=["high", "medium", "low"], help="Task priority")
 
     note_parser = subparsers.add_parser("note", help="Manage notes")
     note_parser.add_argument("--add", metavar="CONTENT", help="Add a note")
     note_parser.add_argument("--list", action="store_true", help="List recent notes")
+    note_parser.add_argument("--tags", metavar="TAGS", help="Comma-separated tags for the note")
 
     event_parser = subparsers.add_parser("event", help="Manage schedule events")
     event_parser.add_argument("--add", metavar="TITLE", help="Add a schedule event")
@@ -130,6 +137,18 @@ def build_parser() -> argparse.ArgumentParser:
 
     subparsers.add_parser("helmet", help="Iron Man helmet mode")
 
+    weather_parser = subparsers.add_parser("weather", help="Get weather")
+    weather_parser.add_argument("city", metavar="CITY", nargs="?", default="Vancouver", help="City name")
+
+    config_parser = subparsers.add_parser("config", help="Manage config")
+    config_parser.add_argument("--set", metavar="KEY=VALUE", help="Set config value")
+    config_parser.add_argument("--get", metavar="KEY", help="Get config value")
+    config_parser.add_argument("--file", metavar="PATH", default="friday.ini", help="Config file path")
+
+    subparsers.add_parser("backup", help="Backup database")
+    restore_parser = subparsers.add_parser("restore", help="Restore database")
+    restore_parser.add_argument("--file", metavar="PATH", default="friday_backup.db", help="Backup file path")
+
     return parser.parse_args()
 
 
@@ -142,8 +161,8 @@ def main(argv: Optional[list] = None) -> int:
     try:
         if args.command == "task":
             if args.add:
-                add_task(conn, user_id, args.add)
-                print(f"Task added: {args.add}")
+                add_task(conn, user_id, args.add, priority=args.priority)
+                print(f"Task added: {args.add} [{args.priority}]")
             elif args.done:
                 complete_task(conn, args.done)
                 print(f"Task {args.done} marked complete")
@@ -151,21 +170,22 @@ def main(argv: Optional[list] = None) -> int:
                 tasks = get_tasks(conn, user_id)
                 for t in tasks:
                     status = "done" if t[3] else "pending"
-                    print(f"[{t[0]}] {t[1]} ({status})")
+                    print(f"[{t[0]}] {t[1]} ({status}) [{t[5]}]")
             else:
-                print("Usage: friday task --add TITLE | --done ID | --list")
+                print("Usage: friday task --add TITLE [--priority high|medium|low] | --done ID | --list")
                 return 1
 
         elif args.command == "note":
             if args.add:
-                add_note(conn, user_id, args.add)
+                add_note(conn, user_id, args.add, args.tags)
                 print("Note added")
             elif args.list:
                 notes = get_notes(conn, user_id)
                 for n in notes:
-                    print(f"[{n[0]}] {n[1]} ({n[2]})")
+                    tags = f" [{n[3]}]" if n[3] else ""
+                    print(f"[{n[0]}] {n[1]} ({n[2]}){tags}")
             else:
-                print("Usage: friday note --add CONTENT | --list")
+                print("Usage: friday note --add CONTENT [--tags tag1,tag2] | --list")
                 return 1
 
         elif args.command == "event":
@@ -307,6 +327,30 @@ def main(argv: Optional[list] = None) -> int:
 
         elif args.command == "design":
             print(design_ascii(args.text, args.style))
+
+        elif args.command == "weather":
+            print(get_weather(args.city))
+
+        elif args.command == "config":
+            if args.set:
+                key, value = args.set.split("=", 1)
+                cfg = load_config(args.file)
+                section = cfg.setdefault("friday", {})
+                section[key] = value
+                save_config(cfg, args.file)
+                print(f"Config set: {key}={value}")
+            elif args.get:
+                cfg = load_config(args.file)
+                print(cfg.get("friday", {}).get(args.get, ""))
+            else:
+                print("Usage: friday config --set KEY=VALUE | --get KEY [--file PATH]")
+                return 1
+
+        elif args.command == "backup":
+            print(backup_db())
+
+        elif args.command == "restore":
+            print(restore_db(args.file))
 
         else:
             if hasattr(args, 'command') and args.command is None:

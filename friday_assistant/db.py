@@ -28,6 +28,7 @@ def setup_database(conn: sqlite3.Connection) -> None:
             description TEXT,
             is_completed INTEGER NOT NULL DEFAULT 0,
             due_date TEXT,
+            priority TEXT NOT NULL DEFAULT 'medium',
             FOREIGN KEY(user_id) REFERENCES users(user_id)
         );
         CREATE TABLE IF NOT EXISTS notes (
@@ -35,6 +36,7 @@ def setup_database(conn: sqlite3.Connection) -> None:
             user_id INTEGER NOT NULL,
             content TEXT NOT NULL,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            tags TEXT,
             FOREIGN KEY(user_id) REFERENCES users(user_id)
         );
         CREATE TABLE IF NOT EXISTS schedule_events (
@@ -103,6 +105,14 @@ def setup_database(conn: sqlite3.Connection) -> None:
     )
     try:
         conn.execute("ALTER TABLE users ADD COLUMN phone TEXT")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        conn.execute("ALTER TABLE tasks ADD COLUMN priority TEXT NOT NULL DEFAULT 'medium'")
+    except sqlite3.OperationalError:
+        pass
+    try:
+        conn.execute("ALTER TABLE notes ADD COLUMN tags TEXT")
     except sqlite3.OperationalError:
         pass
     conn.commit()

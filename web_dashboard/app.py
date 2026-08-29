@@ -8,7 +8,7 @@ import webbrowser
 import threading
 
 # Add project root to path to import friday_assistant
-sys.path.insert(0, '/workspace/54d599b3-eae0-48f0-97a3-e8cb4b29924a/sessions/agent_66a562db-d5d5-48f7-80e3-2bfa27bdd6f5')
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from friday_assistant.db import connect_db, setup_database, get_user_id
 from friday_assistant.models import (

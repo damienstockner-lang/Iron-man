@@ -27,7 +27,7 @@ except ImportError:
 try:
     import pywhatkit
     HAS_PYWHATKIT = True
-except ImportError:
+except Exception:
     HAS_PYWHATKIT = False
 
 

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friday Assistant - How to Use</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #00ff00;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #00cc00;
+            margin-top: 30px;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .step {
+            background: #2d2d2d;
+            border-left: 4px solid #00ff00;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .terminal {
+            background: #0c0c0c;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .terminal-header {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .red { background: #ff5f56; }
+        .yellow { background: #ffbd2e; }
+        .green { background: #27c93f; }
+        .terminal-title {
+            color: #888;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .command {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        .output {
+            color: #d4d4d4;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+        .prompt {
+            color: #00cc00;
+        }
+        .comment {
+            color: #6a9955;
+        }
+        .arrow {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+        .highlight {
+            background: #3d3d3d;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #ffcc00;
+        }
+        .number {
+            color: #00cc00;
+            font-weight: bold;
+        }
+        .warning {
+            background: #4a3a1a;
+            border-left: 4px solid #ffcc00;
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .info {
+            background: #1a3a4a;
+            border-left: 4px solid #00ccff;
+            padding: 10px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🤖 FRIDAY ASSISTANT - HOW TO USE</h1>
+    <p class="subtitle">Step-by-step visual guide for beginners</p>
+
+    <div class="info">
+        <strong>📋 Prerequisites:</strong><br>
+        • Python 3.8 or later installed<br>
+        • Terminal/Command Prompt access<br>
+        • The Friday Assistant files downloaded
+    </div>
+
+    <h2>Step 1: Open Your Terminal</h2>
+    <div class="step">
+        <strong>On Windows:</strong><br>
+        Press <span class="highlight">Win + R</span>, type <span class="highlight">cmd</span>, press Enter<br><br>
+        <strong>On Mac:</strong><br>
+        Press <span class="highlight">Cmd + Space</span>, type <span class="highlight">Terminal</span>, press Enter<br><br>
+        <strong>On Linux:</strong><br>
+        Press <span class="highlight">Ctrl + Alt + T</span>
+    </div>
+
+    <h2>Step 2: Go to the Project Folder</h2>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="output">
+<span class="prompt">$</span> <span class="command">cd /workspace/54d599b3-eae0-48f0-97a3-e8cb4b29924a/sessions/agent_66a562db-d5d5-48f7-80e3-2bfa27bdd6f5</span>
+        </div>
+    </div>
+
+    <h2>Step 3: Install Required Packages (First Time Only)</h2>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="output">
+<span class="prompt">$</span> <span class="command">pip install -r requirements.txt</span>
+<span class="output">
+Collecting pyttsx3>=2.90
+Collecting deep-translator>=1.11.4
+Collecting Pillow>=9.0.0
+Collecting pytesseract>=0.3.10
+Collecting wikipedia>=1.4.0
+Collecting pywhatkit>=5.4
+...
+Successfully installed all packages
+</span>
+        </div>
+    </div>
+
+    <h2>Step 4: See All Available Commands</h2>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="output">
+<span class="prompt">$</span> <span class="command">python3 -m friday_assistant --help</span>
+<span class="output">
+usage: __main__.py [-h]
+                   {task,note,event,contact,steps,appointment,communicate,tv,voice,search,stats,remind,expense,export,today,open,speak,translate,vision,ask,design,helmet,weather,config,backup,restore,habit,shopping,recipe,pomodoro}
+
+Friday personal assistant CLI
+
+positional arguments:
+  {task,note,event,contact,steps, appointment,communicate,tv,voice,search,stats,remind,expense,export,today,open,speak,translate,vision,ask,design,helmet,weather,config,backup,restore,habit,shopping,recipe,pomodoro}
+    task                Manage tasks
+    note                Manage notes
+    event               Manage schedule events
+    contact             Manage contacts
+    steps               Record daily steps
+    appointment         Manage appointments
+    communicate         Send communications
+    tv                  TV remote commands
+    voice               Voice control
+    search              Search across data
+    stats               Show statistics
+    remind              Manage reminders
+    expense             Manage expenses
+    export              Export data to JSON
+    today               Show today's schedule
+    open                Open websites
+    speak               Text to speech
+    translate           Translate text
+    vision              Analyze image
+    ask                 Answer question
+    design              Generate ASCII design
+    helmet              Iron Man helmet mode
+    weather             Get weather
+    config              Manage config
+    backup              Backup database
+    restore             Restore database
+    habit               Manage habits
+    shopping            Shopping list
+    recipe              Recipe manager
+    pomodoro            Pomodoro timer
+</span>
+        </div>
+    </div>
+
+    <h2>Step 5: Try Your First Command - Add a Task</h2>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="output">
+<span class="prompt">$</span> <span class="command">python3 -m friday_assistant task --add "Buy groceries" --priority high</span>
+<span class="output">Task added: Buy groceries [high]</span>
+        </div>
+    </div>
+
+    <h2>Step 6: List Your Tasks</h2>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="output">
+<span class="prompt">$</span> <span class="command">python3 -m friday_assistant task --list</span>
+<span class="output">
+[1] Buy groceries (pending) [high]
+</span>
+        </div>
+    </div>
+
+    <h2>Step 7: Record Your Steps</h2>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="output">
+<span class="prompt">$</span> <span class="command">python3 -m friday_assistant steps --count 5000</span>
+<span class="output">Recorded 5000 steps</span>
+
+<span class="prompt">$</span> <span class="command">python3 -m friday_assistant stats</span>
+<span class="output">
+Friday Stats
+Tasks: 1 total, 0 completed
+Notes: 0
+Events: 0
+Contacts: 0
+Total Steps: 5000
+Total Expenses: $0.00
+</span>
+        </div>
+    </div>
+
+    <h2>Step 8: Add a Habit and Track It</h2>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="output">
+<span class="prompt">$</span> <span class="command">python3 -m friday_assistant habit --add "Exercise"</span>
+<span class="output">Habit added: Exercise [1]</span>
+
+<span class="prompt">$</span> <span class="command">python3 -m friday_assistant habit --complete 1</span>
+<span class="output">Habit 1 completed</span>
+
+<span class="prompt">$</span> <span class="command">python3 -m friday_assistant habit --list</span>
+<span class="output">
+[1] Exercise (daily) streak=1 best=1
+</span>
+        </div>
+    </div>
+
+    <h2>Step 9: Start a Pomodoro Timer</h2>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="output">
+<span class="prompt">$</span> <span class="command">python3 -m friday_assistant pomodoro --start "Write code"</span>
+<span class="output">Pomodoro started: Write code [1]</span>
+
+<span class="prompt">$</span> <span class="command">python3 -m friday_assistant pomodoro --list</span>
+<span class="output">
+[1] Write code 2026-08-29T04:22:31.415544 -> running
+</span>
+        </div>
+    </div>
+
+    <h2>Step 10: Try Voice Control (If Microphone Available)</h2>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-title">Terminal</span>
+        </div>
+        <div class="output">
+<span class="prompt">$</span> <span class="command">python3 -m friday_assistant tv --device LivingRoom --listen</span>
+<span class="output">
+[Listen] Listening for 'LivingRoom'...
+[Listen] Heard: turn on the TV
+Voice command: turn on the TV -> sent 'on' to LivingRoom
+</span>
+        </div>
+    </div>
+
+    <h2>Quick Reference Card</h2>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="terminal-title">Quick Reference</span>
+        </div>
+        <div class="output">
+<span class="comment"># Tasks</span>
+<span class="command">python3 -m friday_assistant task --add "Task name" --priority high</span>
+<span class="command">python3 -m friday_assistant task --list</span>
+<span class="command">python3 -m friday_assistant task --done 1</span>
+
+<span class="comment"># Steps & Stats</span>
+<span class="command">python3 -m friday_assistant steps --count 5000</span>
+<span class="command">python3 -m friday_assistant stats</span>
+
+<span class="comment"># Habits</span>
+<span class="command">python3 -m friday_assistant habit --add "Exercise"</span>
+<span class="command">python3 -m friday_assistant habit --complete 1</span>
+<span class="command">python3 -m friday_assistant habit --list</span>
+
+<span class="comment"># Shopping</span>
+<span class="command">python3 -m friday_assistant shopping --add "Milk"</span>
+<span class="command">python3 -m friday_assistant shopping --list</span>
+
+<span class="comment"># Pomodoro</span>
+<span class="command">python3 -m friday_assistant pomodoro --start "Coding"</span>
+<span class="command">python3 -m friday_assistant pomodoro --list</span>
+
+<span class="comment"># Today's Schedule</span>
+<span class="command">python3 -m friday_assistant today</span>
+
+<span class="comment"># Open Websites</span>
+<span class="command">python3 -m friday_assistant open google</span>
+<span class="command">python3 -m friday_assistant open youtube</span>
+
+<span class="comment"># Backup & Restore</span>
+<span class="command">python3 -m friday_assistant backup</span>
+<span class="command">python3 -m friday_assistant restore</span>
+        </div>
+    </div>
+
+    <div class="warning">
+        <strong>⚠️ Important Notes:</strong><br>
+        • Replace <span class="highlight">python3</span> with <span class="highlight">python</span> on Windows if needed<br>
+        • Always run commands from the project folder<br>
+        • Some features need internet or extra hardware (microphone, IR blaster)<br>
+        • Use <span class="highlight">--help</span> after any command to see options
+    </div>
+</body>
+</html>

@@ -1,0 +1,6 @@
+pyttsx3>=2.90
+deep-translator>=1.11.4
+Pillow>=9.0.0
+pytesseract>=0.3.10
+wikipedia>=1.4.0
+pywhatkit>=5.4

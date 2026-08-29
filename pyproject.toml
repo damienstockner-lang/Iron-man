@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "friday-assistant"
+version = "1.0.0"
+description = "Friday personal assistant CLI"
+requires-python = ">=3.8"
+dependencies = [
+    "pyttsx3>=2.90",
+    "deep-translator>=1.11.4",
+    "Pillow>=9.0.0",
+    "pytesseract>=0.3.10",
+    "wikipedia>=1.4.0",
+    "pywhatkit>=5.4",
+]
+
+[project.scripts]
+friday = "friday_assistant.cli:main"

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Friday">
+    <meta name="theme-color" content="#1e3c72">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="https://emoji.gg/assets/emoji/robot.png">
+    <title>Friday Assistant Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .subtitle { font-size: 1.1em; opacity: 0.9; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .card h2 {
+            color: #1e3c72;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+            border-bottom: 2px solid #1e3c72;
+            padding-bottom: 10px;
+        }
+        .form-group { margin-bottom: 15px; }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #1e3c72;
+        }
+        button {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            transition: opacity 0.3s;
+        }
+        button:hover { opacity: 0.9; }
+        .item-list {
+            list-style: none;
+            margin-top: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .item-list li {
+            padding: 10px;
+            background: #f5f5f5;
+            border-left: 4px solid #1e3c72;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stat-box {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        .nav {
+            background: rgba(255,255,255,0.95);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .nav a {
+            background: #1e3c72;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.3s;
+        }
+        .nav a:hover { opacity: 0.8; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid #f5c6cb;
+        }
+        .offline-badge {
+            background: #ffc107;
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Friday Assistant <span class="offline-badge">OFFLINE MODE</span></h1>
+            <p class="subtitle">Your Personal Command Center - No Internet Required</p>
+        </header>
+
+        <nav class="nav">
+            <a href="#" onclick="showSection('dashboard')">📊 Dashboard</a>
+            <a href="#" onclick="showSection('tasks')">✅ Tasks</a>
+            <a href="#" onclick="showSection('notes')">📝 Notes</a>
+            <a href="#" onclick="showSection('reminders')">⏰ Reminders</a>
+            <a href="#" onclick="showSection('expenses')">💰 Expenses</a>
+            <a href="#" onclick="showSection('steps')">👟 Steps</a>
+            <a href="#" onclick="showSection('mood')">😊 Mood</a>
+            <a href="#" onclick="showSection('tv')">📺 TV</a>
+            <a href="#" onclick="showSection('contacts')">👤 Contacts</a>
+            <a href="#" onclick="showSection('export')">📤 Export</a>
+        </nav>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section active">
+            <div class="card">
+                <h2>📊 Statistics Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-number" id="stat-tasks">0</span>
+                        <span class="stat-label">Total Tasks</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="stat-completed">0</span>
+                        <span class="stat-label">Completed</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="stat-notes">0</span>
+                        <span class="stat-label">Notes</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="stat-events">0</span>
+                        <span class="stat-label">Events</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="stat-steps">0</span>
+                        <span class="stat-label">Total Steps</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-number" id="stat-expenses">$0</span>
+                        <span class="stat-label">Total Expenses</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tasks Section -->
+        <div id="tasks" class="section">
+            <div class="card">
+                <h2>✅ Add New Task</h2>
+                <form onsubmit="addTask(event)">
+                    <div class="form-group">
+                        <label>Task Title</label>
+                        <input type="text" id="task-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select id="task-priority">
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <button type="submit">Add Task</button>
+                </form>
+                <ul class="item-list" id="task-list"></ul>
+            </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div id="notes" class="section">
+            <div class="card">
+                <h2>📝 Add Note</h2>
+                <form onsubmit="addNote(event)">
+                    <div class="form-group">
+                        <label>Note Content</label>
+                        <textarea id="note-content" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Tags (comma-separated)</label>
+                        <input type="text" id="note-tags" placeholder="work, urgent">
+                    </div>
+                    <button type="submit">Add Note</button>
+                </form>
+                <ul class="item-list" id="note-list"></ul>
+            </div>
+        </div>
+
+        <!-- Reminders Section -->
+        <div id="reminders" class="section">
+            <div class="card">
+                <h2>⏰ Add Reminder</h2>
+                <form onsubmit="addReminder(event)">
+                    <div class="form-group">
+                        <label>Reminder Title</label>
+                        <input type="text" id="reminder-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Due Date/Time</label>
+                        <input type="text" id="reminder-due" placeholder="2026-12-01T10:00:00">
+                    </div>
+                    <button type="submit">Add Reminder</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Expenses Section -->
+        <div id="expenses" class="section">
+            <div class="card">
+                <h2>💰 Add Expense</h2>
+                <form onsubmit="addExpense(event)">
+                    <div class="form-group">
+                        <label>Amount ($)</label>
+                        <input type="number" step="0.01" id="expense-amount" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <input type="text" id="expense-category" placeholder="food, transport, etc.">
+                    </div>
+                    <div class="form-group">
+                        <label>Note</label>
+                        <input type="text" id="expense-note" placeholder="Optional note">
+                    </div>
+                    <button type="submit">Add Expense</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Steps Section -->
+        <div id="steps" class="section">
+            <div class="card">
+                <h2>👟 Record Steps</h2>
+                <form onsubmit="recordSteps(event)">
+                    <div class="form-group">
+                        <label>Step Count</label>
+                        <input type="number" id="steps-count" required>
+                    </div>
+                    <button type="submit">Save Steps</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Mood Section -->
+        <div id="mood" class="section">
+            <div class="card">
+                <h2>😊 Mood Tracker</h2>
+                <form onsubmit="addMood(event)">
+                    <div class="form-group">
+                        <label>Mood</label>
+                        <select id="mood-value">
+                            <option value="happy">Happy</option>
+                            <option value="calm">Calm</option>
+                            <option value="neutral">Neutral</option>
+                            <option value="anxious">Anxious</option>
+                            <option value="sad">Sad</option>
+                            <option value="energetic">Energetic</option>
+                            <option value="tired">Tired</option>
+                            <option value="focused">Focused</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Note</label>
+                        <input type="text" id="mood-note" placeholder="Optional note">
+                    </div>
+                    <button type="submit">Save Mood</button>
+                </form>
+                <ul class="item-list" id="mood-list"></ul>
+            </div>
+        </div>
+
+        <!-- TV Section -->
+        <div id="tv" class="section">
+            <div class="card">
+                <h2>📺 TV Control</h2>
+                <form onsubmit="sendTvCommand(event)">
+                    <div class="form-group">
+                        <label>Device</label>
+                        <input type="text" id="tv-device" placeholder="Living Room TV" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Command</label>
+                        <select id="tv-command">
+                            <option value="on">Turn On</option>
+                            <option value="off">Turn Off</option>
+                            <option value="volume_up">Volume Up</option>
+                            <option value="volume_down">Volume Down</option>
+                            <option value="mute">Mute</option>
+                            <option value="unmute">Unmute</option>
+                            <option value="channel_up">Channel Up</option>
+                            <option value="channel_down">Channel Down</option>
+                            <option value="home">Home</option>
+                            <option value="back">Back</option>
+                            <option value="ok">OK</option>
+                            <option value="up">Up</option>
+                            <option value="down">Down</option>
+                            <option value="left">Left</option>
+                            <option value="right">Right</option>
+                        </select>
+                    </div>
+                    <button type="submit">Send Command</button>
+                </form>
+                <div style="margin-top: 20px;">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px;">🗣️ Google Voice Mode</h3>
+                    <button onclick="startTvVoice()" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);">🎤 Listen for Voice Command</button>
+                    <pre id="tv-voice-status" style="margin-top: 10px; background: #f5f5f5; padding: 10px; border-radius: 8px; display: none;"></pre>
+                </div>
+                <ul class="item-list" id="tv-log"></ul>
+            </div>
+        </div>
+
+        <!-- Contacts Section -->
+        <div id="contacts" class="section">
+            <div class="card">
+                <h2>👤 Add Contact</h2>
+                <form onsubmit="addContact(event)">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input type="text" id="contact-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" id="contact-phone">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="contact-email">
+                    </div>
+                    <button type="submit">Add Contact</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Export Section -->
+        <div id="export" class="section">
+            <div class="card">
+                <h2>📤 Export Data</h2>
+                <p style="margin-bottom: 15px; color: #666;">Download all your data as JSON.</p>
+                <button onclick="exportData()">Export All Data</button>
+                <pre id="export-output" style="margin-top: 15px; background: #f5f5f5; padding: 15px; border-radius: 8px; max-height: 400px; overflow-y: auto; display: none;"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        async function api(endpoint, data = {}) {
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API error:', error);
+                return { error: error.message };
+            }
+        }
+
+        async function addTask(e) {
+            e.preventDefault();
+            await api('/api/task', {
+                title: document.getElementById('task-title').value,
+                priority: document.getElementById('task-priority').value
+            });
+            loadTasks();
+            loadStats();
+            e.target.reset();
+        }
+
+        async function completeTask(id) {
+            await api('/api/task/complete', { task_id: id });
+            loadTasks();
+            loadStats();
+        }
+
+        async function addNote(e) {
+            e.preventDefault();
+            await api('/api/note', {
+                content: document.getElementById('note-content').value,
+                tags: document.getElementById('note-tags').value
+            });
+            loadNotes();
+            e.target.reset();
+        }
+
+        async function addReminder(e) {
+            e.preventDefault();
+            await api('/api/reminder', {
+                title: document.getElementById('reminder-title').value,
+                due_at: document.getElementById('reminder-due').value
+            });
+            alert('Reminder added!');
+            e.target.reset();
+        }
+
+        async function addExpense(e) {
+            e.preventDefault();
+            await api('/api/expense', {
+                amount: parseFloat(document.getElementById('expense-amount').value),
+                category: document.getElementById('expense-category').value,
+                note: document.getElementById('expense-note').value
+            });
+            alert('Expense added!');
+            e.target.reset();
+        }
+
+        async function recordSteps(e) {
+            e.preventDefault();
+            await api('/api/steps', {
+                count: parseInt(document.getElementById('steps-count').value)
+            });
+            loadStats();
+            e.target.reset();
+        }
+
+        async function addContact(e) {
+            e.preventDefault();
+            await api('/api/contact', {
+                name: document.getElementById('contact-name').value,
+                phone: document.getElementById('contact-phone').value,
+                email: document.getElementById('contact-email').value
+            });
+            alert('Contact added!');
+            e.target.reset();
+        }
+
+        async function addMood(e) {
+            e.preventDefault();
+            await api('/api/mood', {
+                mood: document.getElementById('mood-value').value,
+                notes: document.getElementById('mood-note').value
+            });
+            loadMoods();
+            e.target.reset();
+        }
+
+        async function loadMoods() {
+            const data = await api('/api/moods');
+            const list = document.getElementById('mood-list');
+            if (!data.moods || data.moods.length === 0) {
+                list.innerHTML = '<li>No moods tracked yet</li>';
+                return;
+            }
+            list.innerHTML = data.moods.map(m => `
+                <li>
+                    <span><strong>${m.mood}</strong> ${m.notes ? '- ' + m.notes : ''}</span>
+                    <small>${m.created_at || ''}</small>
+                </li>
+            `).join('');
+        }
+
+        async function sendTvCommand(e) {
+            e.preventDefault();
+            const device = document.getElementById('tv-device').value;
+            const command = document.getElementById('tv-command').value;
+            await api('/api/tv', { device, command });
+            const log = document.getElementById('tv-log');
+            log.innerHTML = `<li><span><strong>${command}</strong> -> ${device}</span><small>${new Date().toLocaleString()}</small></li>` + log.innerHTML;
+            e.target.reset();
+        }
+
+        async function startTvVoice() {
+            const status = document.getElementById('tv-voice-status');
+            status.style.display = 'block';
+            status.textContent = 'Listening...';
+            const data = await api('/api/tv/voice');
+            status.textContent = data.transcript || 'No voice command detected.';
+            if (data.command) {
+                const log = document.getElementById('tv-log');
+                log.innerHTML = `<li><span><strong>${data.command}</strong> -> ${data.device || 'tv'}</span><small>${new Date().toLocaleString()}</small></li>` + log.innerHTML;
+            }
+        }
+
+        async function exportData() {
+            const data = await api('/api/export');
+            const output = document.getElementById('export-output');
+            output.style.display = 'block';
+            output.textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function loadStats() {
+            const data = await api('/api/stats');
+            document.getElementById('stat-tasks').textContent = data.tasks_total || 0;
+            document.getElementById('stat-completed').textContent = data.tasks_completed || 0;
+            document.getElementById('stat-notes').textContent = data.notes || 0;
+            document.getElementById('stat-events').textContent = data.events || 0;
+            document.getElementById('stat-steps').textContent = data.total_steps || 0;
+            document.getElementById('stat-expenses').textContent = '$' + (data.total_expenses || 0).toFixed(2);
+        }
+
+        async function loadTasks() {
+            const data = await api('/api/tasks');
+            const list = document.getElementById('task-list');
+            if (!data.tasks || data.tasks.length === 0) {
+                list.innerHTML = '<li>No tasks yet</li>';
+                return;
+            }
+            list.innerHTML = data.tasks.map(t => `
+                <li>
+                    <span><strong>${t.title}</strong> - ${t.priority || 'medium'}</span>
+                    ${t.is_completed ? '' : `<button onclick="completeTask(${t.task_id})">✓</button>`}
+                </li>
+            `).join('');
+        }
+
+        async function loadNotes() {
+            const data = await api('/api/notes');
+            const list = document.getElementById('note-list');
+            if (!data.notes || data.notes.length === 0) {
+                list.innerHTML = '<li>No notes yet</li>';
+                return;
+            }
+            list.innerHTML = data.notes.map(n => `
+                <li>
+                    <span><strong>${n.content}</strong> ${n.tags ? '(' + n.tags + ')' : ''}</span>
+                    <small>${n.created_at || ''}</small>
+                </li>
+            `).join('');
+        }
+
+        // Load data on page load
+        loadStats();
+        loadTasks();
+        loadNotes();
+        loadMoods();
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        }
+    </script>
+</body>
+</html>

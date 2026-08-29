@@ -6,7 +6,9 @@ workflows:
       vars:
         XCODE_WORKSPACE: ios/App/App.xcworkspace
         XCODE_SCHEME: App
+        APP_ID: com.friday.assistant
       node: latest
+      cocoapods: default
     scripts:
       - npm install
       - npx cap sync ios

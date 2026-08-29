@@ -1,3 +1,5 @@
+import os
+
 import unittest
 from unittest.mock import patch, MagicMock
 from friday_assistant.utils import (
@@ -24,10 +26,11 @@ try:
 except ImportError:
     HAS_WIKI = False
 
+os.environ.setdefault("DISPLAY", ":0")
 try:
     import pywhatkit
     HAS_PYWHATKIT = True
-except ImportError:
+except Exception:
     HAS_PYWHATKIT = False
 
 

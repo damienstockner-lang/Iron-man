@@ -11,6 +11,10 @@ setup(
         "pytesseract>=0.3.10",
         "wikipedia>=1.4.0",
         "pywhatkit>=5.4",
+        "SpeechRecognition>=3.10.0",
+        "requests>=2.31.0",
+        "plyer>=2.1.0",
+        "babel>=2.14.0",
     ],
     entry_points={
         "console_scripts": [

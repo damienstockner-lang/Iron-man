@@ -50,6 +50,8 @@ friday --help
 | `config --get KEY [--file PATH]` | Get config value |
 | `backup` | Backup database to friday_backup.db |
 | `restore [--file PATH]` | Restore database from backup |
+| `tv --device NAME --command CMD [--listen]` | Send IR command or listen for voice command |
+| `voice --command TEXT` | Speak text aloud |
 
 ## Notes
 

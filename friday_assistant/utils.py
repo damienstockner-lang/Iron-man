@@ -2,6 +2,7 @@ import configparser
 import json
 import os
 import random
+import re
 import shutil
 import time
 from typing import Optional
@@ -99,6 +100,49 @@ def restore_db(backup_path: str = "friday_backup.db") -> str:
         return "[Restore] Backup file not found."
     shutil.copy2(backup_path, dst)
     return f"[Restore] Restored from {backup_path}"
+
+
+def listen_command(device_name: str = "Google", timeout: int = 5) -> str:
+    try:
+        import speech_recognition as sr
+        recognizer = sr.Recognizer()
+        with sr.Microphone() as source:
+            print(f"[Listen] Listening for '{device_name}'...")
+            audio = recognizer.listen(source, timeout=timeout)
+            text = recognizer.recognize_google(audio)
+            print(f"[Listen] Heard: {text}")
+            return text
+    except Exception as e:
+        return f"[Listen] {e}"
+
+
+def match_tv_command(transcript: str) -> tuple[str, str]:
+    transcript = transcript.lower()
+    patterns = [
+        (r"turn on (?:the )?(?:tv|television)", "on"),
+        (r"turn off (?:the )?(?:tv|television)", "off"),
+        (r"(?:tv|television) on", "on"),
+        (r"(?:tv|television) off", "off"),
+        (r"mute", "mute"),
+        (r"unmute", "unmute"),
+        (r"volume up", "volume_up"),
+        (r"volume down", "volume_down"),
+        (r"channel up", "channel_up"),
+        (r"channel down", "channel_down"),
+        (r"source", "source"),
+        (r"home", "home"),
+        (r"back", "back"),
+        (r"up", "up"),
+        (r"down", "down"),
+        (r"left", "left"),
+        (r"right", "right"),
+        (r"enter", "enter"),
+        (r"ok", "ok"),
+    ]
+    for pattern, command in patterns:
+        if re.search(pattern, transcript):
+            return "tv", command
+    return "", ""
 
 
 def helmet_mode() -> None:

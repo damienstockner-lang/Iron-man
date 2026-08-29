@@ -21,7 +21,7 @@ from friday_assistant.models import (
     export_data,
 )
 from friday_assistant.comm import send_sms, send_whatsapp, make_call, ir_send
-from friday_assistant.utils import open_url, speak_text, translate_text, analyze_image, answer_question, helmet_mode, design_ascii, get_weather, load_config, save_config, backup_db, restore_db
+from friday_assistant.utils import open_url, speak_text, translate_text, analyze_image, answer_question, helmet_mode, design_ascii, get_weather, load_config, save_config, backup_db, restore_db, listen_command, match_tv_command
 
 __all__ = [
     "connect_db",
@@ -62,4 +62,6 @@ __all__ = [
     "save_config",
     "backup_db",
     "restore_db",
+    "listen_command",
+    "match_tv_command",
 ]

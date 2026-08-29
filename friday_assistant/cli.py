@@ -44,6 +44,8 @@ from friday_assistant.utils import (
     save_config,
     backup_db,
     restore_db,
+    listen_command,
+    match_tv_command,
 )
 
 
@@ -97,6 +99,11 @@ def build_parser() -> argparse.ArgumentParser:
     tv_parser = subparsers.add_parser("tv", help="TV remote commands")
     tv_parser.add_argument("--device", metavar="NAME", required=True, help="IR device name")
     tv_parser.add_argument("--command", metavar="CMD", required=True, help="IR command to send")
+    tv_parser.add_argument("--listen", action="store_true", help="Listen for voice command")
+
+    voice_parser = subparsers.add_parser("voice", help="Voice control")
+    voice_parser.add_argument("--device", metavar="NAME", default="Google", help="Wake word")
+    voice_parser.add_argument("--command", metavar="CMD", help="Command to speak")
 
     search_parser = subparsers.add_parser("search", help="Search across tasks, notes, contacts, events")
     search_parser.add_argument("query", metavar="QUERY", help="Search term")
@@ -244,8 +251,28 @@ def main(argv: Optional[list] = None) -> int:
                 return 1
 
         elif args.command == "tv":
-            ir_send(args.device, args.command)
-            print(f"Sent IR command to {args.device}: {args.command}")
+            if args.listen:
+                transcript = listen_command(args.device)
+                if transcript:
+                    device, command = match_tv_command(transcript)
+                    if device and command:
+                        ir_send(args.device, command)
+                        print(f"Voice command: {transcript} -> sent '{command}' to {args.device}")
+                    else:
+                        print(f"Could not match TV command from: {transcript}")
+                else:
+                    print("No voice command detected.")
+            else:
+                ir_send(args.device, args.command)
+                print(f"Sent IR command to {args.device}: {args.command}")
+
+        elif args.command == "voice":
+            if args.command:
+                speak_text(args.command)
+                print(f"Spoke: {args.command}")
+            else:
+                print("Usage: friday voice --command TEXT")
+                return 1
 
         elif args.command == "search":
             results = search_all(conn, user_id, args.query)

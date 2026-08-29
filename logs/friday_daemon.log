@@ -1,0 +1,4 @@
+2026-08-29 21:24:22,797 [INFO] Friday Daemon started at 2026-08-29T21:24:22.797346
+2026-08-29 21:24:22,797 [INFO] Starting Friday Dashboard: /usr/bin/python3 /workspace/54d599b3-eae0-48f0-97a3-e8cb4b29924a/sessions/agent_1a6531dc-4ceb-4974-aab8-760a5fd9384b/web_dashboard/app.py
+2026-08-29 21:24:22,797 [INFO] Dashboard PID: 2707
+2026-08-29 21:24:27,777 [INFO] Received signal 15, shutting down daemon.

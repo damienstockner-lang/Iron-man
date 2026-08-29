@@ -1,0 +1,15 @@
+[Unit]
+Description=Friday Assistant Web Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/workspace/54d599b3-eae0-48f0-97a3-e8cb4b29924a/sessions/agent_1a6531dc-4ceb-4974-aab8-760a5fd9384b
+ExecStart=/usr/bin/python3 web_dashboard/daemon.py
+Restart=always
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

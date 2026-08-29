@@ -75,3 +75,29 @@ friday --help
 - `habit`, `shopping`, `recipe`, and `pomodoro` commands store data in SQLite with foreign keys.
 - `pomodoro` tracks focus sessions with start/stop timestamps.
 - `tv --listen` uses SpeechRecognition + Google Speech-to-Text to match voice commands.
+
+## 24/7 Operation
+
+### Web Dashboard (Always On)
+
+```bash
+python3 web_dashboard/daemon.py
+```
+
+Then open `http://localhost:8080` in any browser. The daemon auto-restarts the dashboard if it crashes.
+
+### Production systemd Service
+
+```bash
+sudo cp systemd/friday-assistant.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now friday-assistant
+sudo journalctl -u friday-assistant -f
+```
+
+Logs are written to `web_dashboard/logs/friday_daemon.log`.
+
+### Alternative: Vercel / Render
+
+- `vercel.json` routes requests to `api/app.py`.
+- `render.yaml` serves the static dashboard from `web_dashboard/static`.

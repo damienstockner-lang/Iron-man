@@ -22,16 +22,17 @@ class TestDatabase(unittest.TestCase):
         self.assertIsInstance(conn, sqlite3.Connection)
         conn.close()
 
-    def test_setup_database_creates_tables(self):
-        tables = [
+    def test_setup_database_creates_all_tables(self):
+        expected_tables = [
             "users", "tasks", "notes", "schedule_events", "daily_steps",
             "contacts", "appointments", "action_log", "tv_remote_commands",
             "reminders", "expenses", "habits", "habit_completions",
             "shopping_items", "recipes", "recipe_ingredients", "pomodoro_sessions"
         ]
-        for table in tables:
-            cursor = self.conn.execute(f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table}'")
-            self.assertIsNotNone(cursor.fetchone(), f"Table {table} not created")
+        cursor = self.conn.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+        tables = [row[0] for row in cursor.fetchall()]
+        for table in expected_tables:
+            self.assertIn(table, tables, f"Table {table} not created")
 
     def test_get_user_id_creates_user(self):
         user_id = get_user_id(self.conn, "Test User", "test@example.com", "1234567890")
@@ -48,6 +49,25 @@ class TestDatabase(unittest.TestCase):
         cursor = self.conn.execute("PRAGMA table_info(users)")
         columns = [row[1] for row in cursor.fetchall()]
         self.assertIn("phone", columns)
+
+    def test_tasks_table_has_priority_column(self):
+        cursor = self.conn.execute("PRAGMA table_info(tasks)")
+        columns = [row[1] for row in cursor.fetchall()]
+        self.assertIn("priority", columns)
+
+    def test_notes_table_has_tags_column(self):
+        cursor = self.conn.execute("PRAGMA table_info(notes)")
+        columns = [row[1] for row in cursor.fetchall()]
+        self.assertIn("tags", columns)
+
+    def test_reminders_table_has_location_column(self):
+        cursor = self.conn.execute("PRAGMA table_info(reminders)")
+        columns = [row[1] for row in cursor.fetchall()]
+        self.assertIn("location", columns)
+
+    def test_foreign_keys_enabled(self):
+        result = self.conn.execute("PRAGMA foreign_keys").fetchone()
+        self.assertEqual(result[0], 1)
 
 
 if __name__ == "__main__":

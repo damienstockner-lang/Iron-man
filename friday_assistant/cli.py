@@ -42,6 +42,8 @@ from friday_assistant.models import (
     start_pomodoro,
     end_pomodoro,
     get_pomodoro_sessions,
+    add_mood,
+    get_moods,
 )
 from friday_assistant.comm import send_sms, send_whatsapp, make_call, ir_send
 from friday_assistant.utils import (
@@ -189,6 +191,11 @@ def build_parser(argv: Optional[list] = None) -> argparse.ArgumentParser:
     pomodoro_parser.add_argument("--start", metavar="TASK", nargs="?", help="Start pomodoro session")
     pomodoro_parser.add_argument("--stop", metavar="ID", type=int, help="Stop pomodoro session")
     pomodoro_parser.add_argument("--list", action="store_true", help="List pomodoro sessions")
+
+    mood_parser = subparsers.add_parser("mood", help="Track mood")
+    mood_parser.add_argument("--add", metavar="MOOD", help="Record mood, e.g. happy, sad, anxious")
+    mood_parser.add_argument("--note", metavar="TEXT", help="Optional note about mood")
+    mood_parser.add_argument("--list", action="store_true", help="List recent mood entries")
 
     return parser.parse_args(argv)
 
@@ -480,6 +487,19 @@ def main(argv: Optional[list] = None) -> int:
                     print(f"[{p[0]}] {p[1] or 'focus'} {p[2]} -> {p[3] or 'running'}")
             else:
                 print("Usage: friday pomodoro --start [TASK] | --stop ID | --list")
+                return 1
+
+        elif args.command == "mood":
+            if args.add:
+                mood_id = add_mood(conn, user_id, args.add, args.note)
+                print(f"Mood recorded: {args.add} [{mood_id}]")
+            elif args.list:
+                moods = get_moods(conn, user_id)
+                for m in moods:
+                    note = f" - {m[2]}" if m[2] else ""
+                    print(f"[{m[0]}] {m[1]}{note} ({m[3]})")
+            else:
+                print("Usage: friday mood --add MOOD [--note TEXT] | --list")
                 return 1
 
         else:

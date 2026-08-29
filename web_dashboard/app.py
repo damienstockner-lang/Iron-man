@@ -16,7 +16,10 @@ from friday_assistant.models import (
     record_steps, get_tasks, get_today_events, get_notes,
     get_stats, export_data, add_schedule_event, add_appointment,
     add_contact, find_contact, log_action, queue_tv_command,
+    add_mood, get_moods,
 )
+from friday_assistant.comm import ir_send
+from friday_assistant.utils import listen_command, match_tv_command
 
 MY_PHONE = "6043282162"
 PORT = 8080
@@ -207,6 +210,8 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             <a href="#" onclick="showSection('reminders')">⏰ Reminders</a>
             <a href="#" onclick="showSection('expenses')">💰 Expenses</a>
             <a href="#" onclick="showSection('steps')">👟 Steps</a>
+            <a href="#" onclick="showSection('mood')">😊 Mood</a>
+            <a href="#" onclick="showSection('tv')">📺 TV</a>
             <a href="#" onclick="showSection('contacts')">👤 Contacts</a>
             <a href="#" onclick="showSection('export')">📤 Export</a>
         </nav>
@@ -340,6 +345,74 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             </div>
         </div>
 
+        <!-- Mood Section -->
+        <div id="mood" class="section">
+            <div class="card">
+                <h2>😊 Mood Tracker</h2>
+                <form onsubmit="addMood(event)">
+                    <div class="form-group">
+                        <label>Mood</label>
+                        <select id="mood-value">
+                            <option value="happy">Happy</option>
+                            <option value="calm">Calm</option>
+                            <option value="neutral">Neutral</option>
+                            <option value="anxious">Anxious</option>
+                            <option value="sad">Sad</option>
+                            <option value="energetic">Energetic</option>
+                            <option value="tired">Tired</option>
+                            <option value="focused">Focused</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Note</label>
+                        <input type="text" id="mood-note" placeholder="Optional note">
+                    </div>
+                    <button type="submit">Save Mood</button>
+                </form>
+                <ul class="item-list" id="mood-list"></ul>
+            </div>
+        </div>
+
+        <!-- TV Section -->
+        <div id="tv" class="section">
+            <div class="card">
+                <h2>📺 TV Control</h2>
+                <form onsubmit="sendTvCommand(event)">
+                    <div class="form-group">
+                        <label>Device</label>
+                        <input type="text" id="tv-device" placeholder="Living Room TV" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Command</label>
+                        <select id="tv-command">
+                            <option value="on">Turn On</option>
+                            <option value="off">Turn Off</option>
+                            <option value="volume_up">Volume Up</option>
+                            <option value="volume_down">Volume Down</option>
+                            <option value="mute">Mute</option>
+                            <option value="unmute">Unmute</option>
+                            <option value="channel_up">Channel Up</option>
+                            <option value="channel_down">Channel Down</option>
+                            <option value="home">Home</option>
+                            <option value="back">Back</option>
+                            <option value="ok">OK</option>
+                            <option value="up">Up</option>
+                            <option value="down">Down</option>
+                            <option value="left">Left</option>
+                            <option value="right">Right</option>
+                        </select>
+                    </div>
+                    <button type="submit">Send Command</button>
+                </form>
+                <div style="margin-top: 20px;">
+                    <h3 style="color: #1e3c72; margin-bottom: 10px;">🗣️ Google Voice Mode</h3>
+                    <button onclick="startTvVoice()" style="background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);">🎤 Listen for Voice Command</button>
+                    <pre id="tv-voice-status" style="margin-top: 10px; background: #f5f5f5; padding: 10px; border-radius: 8px; display: none;"></pre>
+                </div>
+                <ul class="item-list" id="tv-log"></ul>
+            </div>
+        </div>
+
         <!-- Contacts Section -->
         <div id="contacts" class="section">
             <div class="card">
@@ -461,6 +534,53 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             e.target.reset();
         }
 
+        async function addMood(e) {
+            e.preventDefault();
+            await api('/api/mood', {
+                mood: document.getElementById('mood-value').value,
+                notes: document.getElementById('mood-note').value
+            });
+            loadMoods();
+            e.target.reset();
+        }
+
+        async function loadMoods() {
+            const data = await api('/api/moods');
+            const list = document.getElementById('mood-list');
+            if (!data.moods || data.moods.length === 0) {
+                list.innerHTML = '<li>No moods tracked yet</li>';
+                return;
+            }
+            list.innerHTML = data.moods.map(m => `
+                <li>
+                    <span><strong>${m.mood}</strong> ${m.notes ? '- ' + m.notes : ''}</span>
+                    <small>${m.created_at || ''}</small>
+                </li>
+            `).join('');
+        }
+
+        async function sendTvCommand(e) {
+            e.preventDefault();
+            const device = document.getElementById('tv-device').value;
+            const command = document.getElementById('tv-command').value;
+            await api('/api/tv', { device, command });
+            const log = document.getElementById('tv-log');
+            log.innerHTML = `<li><span><strong>${command}</strong> -> ${device}</span><small>${new Date().toLocaleString()}</small></li>` + log.innerHTML;
+            e.target.reset();
+        }
+
+        async function startTvVoice() {
+            const status = document.getElementById('tv-voice-status');
+            status.style.display = 'block';
+            status.textContent = 'Listening...';
+            const data = await api('/api/tv/voice');
+            status.textContent = data.transcript || 'No voice command detected.';
+            if (data.command) {
+                const log = document.getElementById('tv-log');
+                log.innerHTML = `<li><span><strong>${data.command}</strong> -> ${data.device || 'tv'}</span><small>${new Date().toLocaleString()}</small></li>` + log.innerHTML;
+            }
+        }
+
         async function exportData() {
             const data = await api('/api/export');
             const output = document.getElementById('export-output');
@@ -512,6 +632,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         loadStats();
         loadTasks();
         loadNotes();
+        loadMoods();
     </script>
     <script>
         if ('serviceWorker' in navigator) {
@@ -547,6 +668,10 @@ class FridayHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_tasks()
         elif self.path == '/api/notes':
             self.handle_notes()
+        elif self.path == '/api/moods':
+            self.handle_moods()
+        elif self.path == '/api/tv':
+            self.handle_tv()
         elif self.path == '/api/export':
             self.handle_export()
         else:
@@ -574,6 +699,12 @@ class FridayHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.handle_steps(data)
         elif self.path == '/api/contact':
             self.handle_add_contact(data)
+        elif self.path == '/api/mood':
+            self.handle_add_mood(data)
+        elif self.path == '/api/tv':
+            self.handle_tv_command(data)
+        elif self.path == '/api/tv/voice':
+            self.handle_tv_voice()
         else:
             self.send_json({"error": "Not found"}, 404)
 
@@ -654,6 +785,55 @@ class FridayHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         add_contact(conn, data.get("name", ""), data.get("phone"), data.get("email"))
         conn.close()
         self.send_json({"success": True})
+
+    def handle_moods(self):
+        conn = self.get_conn()
+        user_id = get_user_id(conn, "Default User", "user@example.com", MY_PHONE)
+        moods = get_moods(conn, user_id)
+        conn.close()
+        self.send_json({"moods": [{"mood_id": m[0], "mood": m[1], "notes": m[2], "created_at": m[3]} for m in moods]})
+
+    def handle_add_mood(self, data):
+        conn = self.get_conn()
+        user_id = get_user_id(conn, "Default User", "user@example.com", MY_PHONE)
+        add_mood(conn, user_id, data.get("mood", ""), data.get("notes"))
+        conn.close()
+        self.send_json({"success": True})
+
+    def handle_tv(self):
+        conn = self.get_conn()
+        user_id = get_user_id(conn, "Default User", "user@example.com", MY_PHONE)
+        rows = conn.execute(
+            "SELECT command_id, device_name, command, status, created_at FROM tv_remote_commands WHERE user_id = ? ORDER BY created_at DESC LIMIT 20",
+            (user_id,),
+        ).fetchall()
+        conn.close()
+        self.send_json({"commands": [{"command_id": r[0], "device": r[1], "command": r[2], "status": r[3], "created_at": r[4]} for r in rows]})
+
+    def handle_tv_command(self, data):
+        device = data.get("device", "")
+        command = data.get("command", "")
+        if not device or not command:
+            self.send_json({"error": "device and command required"}, 400)
+            return
+        ir_send(device, command)
+        conn = self.get_conn()
+        user_id = get_user_id(conn, "Default User", "user@example.com", MY_PHONE)
+        queue_tv_command(conn, device, command)
+        conn.close()
+        self.send_json({"success": True, "device": device, "command": command})
+
+    def handle_tv_voice(self):
+        transcript = listen_command("Google", timeout=5)
+        device, command = match_tv_command(transcript) if transcript else ("", "")
+        response = {"transcript": transcript, "device": device, "command": command}
+        if device and command:
+            ir_send(device, command)
+            conn = self.get_conn()
+            user_id = get_user_id(conn, "Default User", "user@example.com", MY_PHONE)
+            queue_tv_command(conn, device, command)
+            conn.close()
+        self.send_json(response)
 
     def handle_export(self):
         conn = self.get_conn()

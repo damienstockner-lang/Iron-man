@@ -14,7 +14,8 @@ def load_data():
         "reminders": [],
         "expenses": [],
         "steps": [],
-        "contacts": []
+        "contacts": [],
+        "moods": []
     }
 
 def save_data(data):
@@ -101,7 +102,8 @@ def get_stats(data):
         "events": 0,
         "contacts": len(data["contacts"]),
         "total_steps": sum(s["steps"] for s in data["steps"]),
-        "total_expenses": sum(e["amount"] for e in data["expenses"])
+        "total_expenses": sum(e["amount"] for e in data["expenses"]),
+        "moods": len(data["moods"]),
     }
 
 def add_contact(data, name, phone="", email=""):
@@ -117,3 +119,19 @@ def add_contact(data, name, phone="", email=""):
 
 def export_data(data):
     return data
+
+
+def add_mood(data, mood, notes=""):
+    entry = {
+        "mood_id": len(data["moods"]) + 1,
+        "mood": mood,
+        "notes": notes,
+        "created_at": datetime.now().isoformat()
+    }
+    data["moods"].append(entry)
+    save_data(data)
+    return entry
+
+
+def get_moods(data, limit=50):
+    return data["moods"][-limit:]

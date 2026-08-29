@@ -13,6 +13,7 @@ from friday_assistant.models import (
     add_shopping_item, toggle_shopping_item, get_shopping_items,
     add_recipe, add_recipe_ingredient, get_recipes, get_recipe_ingredients,
     start_pomodoro, end_pomodoro, get_pomodoro_sessions,
+    add_mood, get_moods,
 )
 
 
@@ -138,6 +139,14 @@ class TestModels(unittest.TestCase):
         sessions = get_pomodoro_sessions(self.conn, self.user_id)
         self.assertEqual(len(sessions), 1)
         self.assertIsNotNone(sessions[0][3])
+
+    def test_add_mood_and_list(self):
+        mood_id = add_mood(self.conn, self.user_id, "happy", "Good day")
+        row = self.conn.execute("SELECT mood, notes FROM mood_entries WHERE mood_id = ?", (mood_id,)).fetchone()
+        self.assertEqual(row, ("happy", "Good day"))
+        moods = get_moods(self.conn, self.user_id)
+        self.assertEqual(len(moods), 1)
+        self.assertEqual(moods[0][1], "happy")
 
 
 if __name__ == "__main__":

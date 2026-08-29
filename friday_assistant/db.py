@@ -155,6 +155,14 @@ def setup_database(conn: sqlite3.Connection) -> None:
             duration_minutes INTEGER NOT NULL,
             FOREIGN KEY(user_id) REFERENCES users(user_id)
         );
+        CREATE TABLE IF NOT EXISTS mood_entries (
+            mood_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            mood TEXT NOT NULL,
+            notes TEXT,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(user_id)
+        );
         """
     )
     try:

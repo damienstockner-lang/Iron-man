@@ -404,3 +404,19 @@ def get_pomodoro_sessions(conn: sqlite3.Connection, user_id: int, limit: int = 2
         "SELECT session_id, task, started_at, ended_at, duration_minutes FROM pomodoro_sessions WHERE user_id = ? ORDER BY started_at DESC LIMIT ?",
         (user_id, limit),
     ).fetchall()
+
+
+def add_mood(conn: sqlite3.Connection, user_id: int, mood: str, notes: Optional[str] = None) -> int:
+    cursor = conn.execute(
+        "INSERT INTO mood_entries (user_id, mood, notes) VALUES (?, ?, ?)",
+        (user_id, mood, notes),
+    )
+    conn.commit()
+    return int(cursor.lastrowid)
+
+
+def get_moods(conn: sqlite3.Connection, user_id: int, limit: int = 50) -> list:
+    return conn.execute(
+        "SELECT mood_id, mood, notes, created_at FROM mood_entries WHERE user_id = ? ORDER BY created_at DESC LIMIT ?",
+        (user_id, limit),
+    ).fetchall()

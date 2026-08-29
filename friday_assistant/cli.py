@@ -65,7 +65,7 @@ from friday_assistant.utils import (
 MY_PHONE = "6043282162"
 
 
-def build_parser() -> argparse.ArgumentParser:
+def build_parser(argv: Optional[list] = None) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Friday personal assistant CLI")
     subparsers = parser.add_subparsers(dest="command")
 
@@ -111,7 +111,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     tv_parser = subparsers.add_parser("tv", help="TV remote commands")
     tv_parser.add_argument("--device", metavar="NAME", required=True, help="IR device name")
-    tv_parser.add_argument("--command", metavar="CMD", required=True, help="IR command to send")
+    tv_parser.add_argument("--command", metavar="CMD", help="IR command to send")
     tv_parser.add_argument("--listen", action="store_true", help="Listen for voice command")
 
     voice_parser = subparsers.add_parser("voice", help="Voice control")
@@ -190,11 +190,11 @@ def build_parser() -> argparse.ArgumentParser:
     pomodoro_parser.add_argument("--stop", metavar="ID", type=int, help="Stop pomodoro session")
     pomodoro_parser.add_argument("--list", action="store_true", help="List pomodoro sessions")
 
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def main(argv: Optional[list] = None) -> int:
-    args = build_parser() if argv is None else build_parser()
+    args = build_parser(argv)
     conn = connect_db()
     setup_database(conn)
     user_id = get_user_id(conn, "Default User", "user@example.com", MY_PHONE)
@@ -285,6 +285,9 @@ def main(argv: Optional[list] = None) -> int:
                 return 1
 
         elif args.command == "tv":
+            if not args.listen and not args.command:
+                print("Usage: friday tv --device NAME --command CMD | --listen")
+                return 1
             if args.listen:
                 transcript = listen_command(args.device)
                 if transcript:

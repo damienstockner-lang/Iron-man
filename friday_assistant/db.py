@@ -53,6 +53,59 @@ def setup_database(conn: sqlite3.Connection) -> None:
             recurrence_until TEXT,
             FOREIGN KEY(user_id) REFERENCES users(user_id)
         );
+        CREATE TABLE IF NOT EXISTS daily_steps (
+            step_date TEXT PRIMARY KEY,
+            steps INTEGER NOT NULL CHECK (steps >= 0),
+            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS contacts (
+            contact_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            phone TEXT,
+            email TEXT,
+            UNIQUE(name, phone, email)
+        );
+        CREATE TABLE IF NOT EXISTS appointments (
+            appointment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            service TEXT NOT NULL,
+            starts_at TEXT NOT NULL,
+            provider TEXT,
+            status TEXT NOT NULL DEFAULT 'requested',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS action_log (
+            action_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action_type TEXT NOT NULL,
+            recipient TEXT,
+            content TEXT,
+            status TEXT NOT NULL DEFAULT 'pending',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS tv_remote_commands (
+            command_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            device_name TEXT NOT NULL,
+            command TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'queued',
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE TABLE IF NOT EXISTS reminders (
+            reminder_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            title TEXT NOT NULL,
+            due_at TEXT NOT NULL,
+            is_done INTEGER NOT NULL DEFAULT 0,
+            location TEXT,
+            FOREIGN KEY(user_id) REFERENCES users(user_id)
+        );
+        CREATE TABLE IF NOT EXISTS expenses (
+            expense_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            amount REAL NOT NULL CHECK (amount >= 0),
+            category TEXT,
+            note TEXT,
+            spent_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(user_id) REFERENCES users(user_id)
+        );
         CREATE TABLE IF NOT EXISTS habits (
             habit_id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
@@ -130,10 +183,6 @@ def setup_database(conn: sqlite3.Connection) -> None:
         pass
     try:
         conn.execute("ALTER TABLE schedule_events ADD COLUMN recurrence_until TEXT")
-    except sqlite3.OperationalError:
-        pass
-    try:
-        conn.execute("ALTER TABLE reminders ADD COLUMN location TEXT")
     except sqlite3.OperationalError:
         pass
     conn.commit()

@@ -1,0 +1,8 @@
+FASTAPI
+uvicorn
+python-dotenv
+pydantic
+sqlite-utils
+requests
+# Optional for telephony
+# twilio
